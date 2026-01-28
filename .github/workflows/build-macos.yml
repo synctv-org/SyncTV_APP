@@ -1,0 +1,51 @@
+name: Build macOS
+
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+  workflow_dispatch:
+
+jobs:
+  build-macos:
+    name: Build macOS (APP)
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+          
+      - name: Enable macOS Desktop
+        run: flutter config --enable-macos-desktop
+        
+      - name: Get Dependencies
+        run: flutter pub get
+        
+      - name: Build macOS
+        run: flutter build macos --release
+        
+      # macOS build produces a .app bundle. We zip it for distribution.
+      - name: Compress Build
+        run: |
+          cd build/macos/Build/Products/Release
+          zip -r ../../../../../Sync-TV-macOS-${{ runner.arch }}-${{ github.ref_name }}.zip synctv_app.app
+          
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: synctv-macos
+          path: Sync-TV-macOS-${{ runner.arch }}-${{ github.ref_name }}.zip
+
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          generate_release_notes: true
+          files: Sync-TV-macOS-${{ runner.arch }}-${{ github.ref_name }}.zip
+
+
+
