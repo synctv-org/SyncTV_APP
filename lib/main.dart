@@ -1,9 +1,13 @@
 import 'dart:async';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:synctv_app/models/watch_together_models.dart';
 import 'package:synctv_app/services/watch_together_service.dart';
-import 'package:synctv_app/watch_together_room_screen.dart';
-import 'package:synctv_app/watch_together_admin_settings.dart';
+import 'package:synctv_app/pages/mobile/watch_together_room_screen.dart';
+import 'package:synctv_app/pages/desktop/desktop_home_screen.dart';
+import 'package:synctv_app/pages/large_screen/large_screen_home.dart';
+import 'package:synctv_app/widgets/watch_together_admin_settings.dart';
 import 'package:synctv_app/utils/message_utils.dart';
 import 'package:synctv_app/utils/chat_utils.dart';
 import 'package:video_player_media_kit/video_player_media_kit.dart';
@@ -58,8 +62,33 @@ class MyApp extends StatelessWidget {
           brightness: Brightness.dark,
         ),
       ),
-      home: const WatchTogetherHomeScreen(),
+      builder: (context, child) {
+        final mediaQueryData = MediaQuery.of(context);
+        return MediaQuery(
+          data: mediaQueryData.copyWith(
+            textScaler: mediaQueryData.textScaler.clamp(minScaleFactor: 0.8, maxScaleFactor: 1.0),
+          ),
+          child: child!,
+        );
+      },
+      // home: const LargeScreenHome(),
+       home: Builder(
+         builder: (context) {
+           if (_isDesktop()) {
+             return const DesktopHomeScreen();
+           }
+           if (MediaQuery.of(context).size.width > 600) {
+             return const LargeScreenHome();
+           }
+           return const WatchTogetherHomeScreen();
+         },
+       ),
     );
+  }
+
+  bool _isDesktop() {
+    if (kIsWeb) return false;
+    return Platform.isWindows || Platform.isMacOS || Platform.isLinux;
   }
 }
 
@@ -725,7 +754,7 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
             style: TextStyle(color: textColor),
             decoration: const InputDecoration(
               labelText: '服务器地址',
-              hintText: '例如: https://sso.lhht.cc/api',
+              hintText: '例如: https://tv.test.com/api',
               labelStyle: TextStyle(color: Colors.grey),
               prefixIcon: Icon(Icons.link, color: Colors.grey),
               enabledBorder: OutlineInputBorder(borderSide: BorderSide(color: Colors.grey)),

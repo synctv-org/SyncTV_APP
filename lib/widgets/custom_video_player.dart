@@ -238,6 +238,10 @@ class CustomVideoPlayer extends StatefulWidget {
   final VoidCallback? onSync;
   final bool isFullScreen;
   final Function(String)? onSendDanmaku;
+  final IconData? fullScreenIcon;
+  final IconData? exitFullScreenIcon;
+  final bool showCastButton;
+  final Widget? extraBottomWidget;
 
   const CustomVideoPlayer({
     super.key,
@@ -249,6 +253,10 @@ class CustomVideoPlayer extends StatefulWidget {
     this.onSync,
     this.isFullScreen = false,
     this.onSendDanmaku,
+    this.fullScreenIcon,
+    this.exitFullScreenIcon,
+    this.showCastButton = true,
+    this.extraBottomWidget,
   });
 
   @override
@@ -1462,48 +1470,52 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with SingleTicker
                     top: 0,
                     left: 0,
                     right: 0,
-                    child: SafeArea(
-                      child: Container(
-                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [Colors.black87, Colors.transparent],
-                          ),
+                    child: Container(
+                      padding: EdgeInsets.only(
+                        top: MediaQuery.of(context).padding.top + 8,
+                        bottom: 8,
+                        left: 16,
+                        right: 16,
+                      ),
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [Colors.black87, Colors.transparent],
                         ),
-                        child: Row(
-                          children: [
-                            if (widget.isFullScreen)
-                              BackButton(color: Colors.white, onPressed: widget.onToggleFullScreen),
-                            Expanded(
-                              child: Text(
-                                widget.title,
-                                style: const TextStyle(color: Colors.white, fontSize: 16),
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                      ),
+                      child: Row(
+                        children: [
+                          if (widget.isFullScreen)
+                            BackButton(color: Colors.white, onPressed: widget.onToggleFullScreen),
+                          Expanded(
+                            child: Text(
+                              widget.title,
+                              style: const TextStyle(color: Colors.white, fontSize: 16),
+                              overflow: TextOverflow.ellipsis,
                             ),
-                            if (widget.onSync != null && !widget.isFullScreen) ...[
-                              TextButton(
-                                onPressed: widget.onSync,
-                                style: TextButton.styleFrom(
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  minimumSize: const Size(48, 32),
-                                  tapTargetSize: MaterialTapTargetSize.padded,
-                                ),
-                                child: const Text('同步', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                          ),
+                          if (widget.onSync != null && !widget.isFullScreen) ...[
+                            TextButton(
+                              onPressed: widget.onSync,
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.white,
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                minimumSize: const Size(48, 32),
+                                tapTargetSize: MaterialTapTargetSize.padded,
                               ),
-                            ],
-                          IconButton(
+                              child: const Text('同步', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                            ),
+                          ],
+                          if (widget.showCastButton)
+                            IconButton(
                               icon: Icon(
                                 _isCasting ? Icons.cast_connected : Icons.cast,
                                 color: _isCasting ? const Color(0xFF5D5FEF) : Colors.white,
                               ),
                               onPressed: _showDlnaMenu,
                             ),
-                          ],
-                        ),
+                        ],
                       ),
                     ),
                   ),
@@ -1513,17 +1525,17 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with SingleTicker
                     bottom: 0,
                     left: 0,
                     right: 0,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
-                          begin: Alignment.bottomCenter,
-                          end: Alignment.topCenter,
-                          colors: [Colors.black87, Colors.transparent],
+                    child: SafeArea(
+                      top: false,
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                        decoration: const BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [Colors.black87, Colors.transparent],
+                          ),
                         ),
-                      ),
-                      child: SafeArea(
-                        top: false,
                         child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
@@ -1597,6 +1609,10 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with SingleTicker
                                 constraints: widget.isFullScreen ? null : const BoxConstraints(),
                                 iconSize: widget.isFullScreen ? 24 : 20,
                               ),
+                              if (widget.extraBottomWidget != null) ...[
+                                SizedBox(width: widget.isFullScreen ? 0 : 4),
+                                widget.extraBottomWidget!,
+                              ],
                               // Send Danmaku Button (Fullscreen only)
                               if (widget.isFullScreen && widget.onSendDanmaku != null)
                                 IconButton(
@@ -1621,7 +1637,9 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with SingleTicker
                                 SizedBox(width: widget.isFullScreen ? 0 : 4),
                                 IconButton(
                                   icon: Icon(
-                                    widget.isFullScreen ? Icons.fullscreen_exit : Icons.fullscreen,
+                                    widget.isFullScreen 
+                                        ? (widget.exitFullScreenIcon ?? Icons.fullscreen_exit) 
+                                        : (widget.fullScreenIcon ?? Icons.fullscreen),
                                     color: Colors.white,
                                   ),
                                   onPressed: widget.onToggleFullScreen,
