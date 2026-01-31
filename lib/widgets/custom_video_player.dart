@@ -1477,12 +1477,13 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with SingleTicker
                         left: 16,
                         right: 16,
                       ),
-                      decoration: const BoxDecoration(
-                        gradient: LinearGradient(
+                      decoration: BoxDecoration(
+                        gradient: widget.isFullScreen ? const LinearGradient(
                           begin: Alignment.topCenter,
                           end: Alignment.bottomCenter,
                           colors: [Colors.black87, Colors.transparent],
-                        ),
+                        ) : null,
+                        color: null,
                       ),
                       child: Row(
                         children: [
@@ -1529,12 +1530,13 @@ class _CustomVideoPlayerState extends State<CustomVideoPlayer> with SingleTicker
                       top: false,
                       child: Container(
                         padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                        decoration: const BoxDecoration(
-                          gradient: LinearGradient(
+                        decoration: BoxDecoration(
+                          gradient: widget.isFullScreen ? const LinearGradient(
                             begin: Alignment.bottomCenter,
                             end: Alignment.topCenter,
                             colors: [Colors.black87, Colors.transparent],
-                          ),
+                          ) : null,
+                          color: null,
                         ),
                         child: Column(
                         mainAxisSize: MainAxisSize.min,

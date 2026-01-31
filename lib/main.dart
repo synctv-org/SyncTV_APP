@@ -10,6 +10,7 @@ import 'package:synctv_app/pages/large_screen/large_screen_home.dart';
 import 'package:synctv_app/widgets/watch_together_admin_settings.dart';
 import 'package:synctv_app/utils/message_utils.dart';
 import 'package:synctv_app/utils/chat_utils.dart';
+import 'package:synctv_app/theme/app_theme.dart';
 import 'package:video_player_media_kit/video_player_media_kit.dart';
 
 void main() async {
@@ -32,36 +33,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'SyncTV',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF5D5FEF),
-          surface: Colors.white,
-        ),
-        useMaterial3: true,
-        scaffoldBackgroundColor: Colors.white,
-        cardTheme: const CardThemeData(
-          color: Colors.white,
-          surfaceTintColor: Colors.transparent,
-        ),
-        dialogTheme: const DialogThemeData(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.transparent,
-        ),
-        bottomSheetTheme: const BottomSheetThemeData(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.transparent,
-        ),
-        appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
-          surfaceTintColor: Colors.transparent,
-        ),
-      ),
-      darkTheme: ThemeData.dark().copyWith(
-        colorScheme: ColorScheme.fromSeed(
-          seedColor: const Color(0xFF5D5FEF),
-          brightness: Brightness.dark,
-        ),
-      ),
+      theme: AppTheme.light,
+      darkTheme: AppTheme.dark,
       builder: (context, child) {
         final mediaQueryData = MediaQuery.of(context);
         var newMediaQueryData = mediaQueryData;
@@ -313,12 +286,11 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () async {
             if (nameController.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入房间名称');
               return;
@@ -335,11 +307,7 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
               MessageUtils.showError(context, '创建失败: $e');
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('创建'),
+          text: '创建',
         ),
       ],
     );
@@ -365,12 +333,11 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () async {
             if (idController.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入房间ID');
               return;
@@ -383,11 +350,7 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
               MessageUtils.showError(context, '查找房间失败: $e');
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('加入'),
+          text: '加入',
         ),
       ],
     );
@@ -414,12 +377,11 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
         obscureText: true,
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () async {
             if (passwordController.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入新密码');
               return;
@@ -432,11 +394,7 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
               MessageUtils.showError(context, '修改失败: $e');
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('确定'),
+          text: '确定',
         ),
       ],
     );
@@ -718,7 +676,7 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: _showOptionsBottomSheet,
-        child: const Icon(Icons.add),
+        child: const Icon(Icons.add, color: Colors.white),
         backgroundColor: const Color(0xFF5D5FEF),
       ),
     );
@@ -803,12 +761,11 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
         ],
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () async {
             if (controller.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入服务器地址');
               return;
@@ -820,11 +777,7 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
               _loadRooms(silent: false);
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('保存'),
+          text: '保存',
         ),
       ],
     );
@@ -837,17 +790,12 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
       icon: const Icon(Icons.logout, color: Colors.red),
       content: const Text('确定要退出当前账号吗？'),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('退出'),
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () => Navigator.pop(context, true),
+          text: '退出',
         ),
       ],
     ).then((confirm) async {
@@ -886,17 +834,12 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, passwordController.text),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF5D5FEF),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('确定'),
+          ChatUtils.createCancelButton(context),
+          const SizedBox(width: 8),
+          ChatUtils.createConfirmButton(
+            context,
+            () => Navigator.pop(context, passwordController.text),
+            text: '确定',
           ),
         ],
       );
@@ -944,17 +887,12 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
       icon: const Icon(Icons.delete_outline, color: Colors.red),
       content: Text('确定要删除房间 "${room.roomName}" 吗？此操作不可撤销。'),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('删除'),
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () => Navigator.pop(context, true),
+          text: '删除',
         ),
       ],
     );
@@ -1244,16 +1182,10 @@ class _LoginDialogState extends State<LoginDialog> with SingleTickerProviderStat
           height: 48,
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton(
-                  onPressed: _submit,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF5D5FEF),
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                  ),
-                  child: Text(buttonText, style: const TextStyle(fontSize: 16)),
+              : ChatUtils.createConfirmButton(
+                  context,
+                  _submit,
+                  text: buttonText,
                 ),
         ),
       ],

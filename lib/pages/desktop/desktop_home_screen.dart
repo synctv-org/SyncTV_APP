@@ -133,7 +133,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
     ChatUtils.showStyledDialog<bool>(
       context: context,
       title: '登录/注册',
-      icon: const Icon(Icons.login, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.login, color: Theme.of(context).primaryColor),
       content: const _LoginDialog(),
       actions: [],
     ).then((result) {
@@ -162,7 +162,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
     ChatUtils.showStyledDialog(
       context: context,
       title: '创建房间',
-      icon: const Icon(Icons.add_box_outlined, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.add_box_outlined, color: Theme.of(context).primaryColor),
       content: SizedBox(
         width: 300,
         child: Column(
@@ -194,34 +194,24 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () async {
             if (nameController.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入房间名称');
               return;
             }
             try {
-              await WatchTogetherService.createRoom(
+              final room = await WatchTogetherService.createRoom(
                 nameController.text,
                 password: passwordController.text.isEmpty ? null : passwordController.text,
               );
               Navigator.pop(context);
-              _loadRooms(silent: true);
-              MessageUtils.showSuccess(context, '房间创建成功');
+              _handleJoinRoom(room);
             } catch (e) {
-              MessageUtils.showError(context, '创建失败: $e');
+              MessageUtils.showError(context, '创建房间失败: $e');
             }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('创建'),
-        ),
+        }, text: '创建'),
       ],
     );
   }
@@ -234,7 +224,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
     ChatUtils.showStyledDialog(
       context: context,
       title: '加入房间',
-      icon: const Icon(Icons.login_rounded, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.login_rounded, color: Theme.of(context).primaryColor),
       content: SizedBox(
         width: 300,
         child: TextField(
@@ -249,12 +239,9 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () async {
             if (idController.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入房间ID');
               return;
@@ -266,13 +253,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
             } catch (e) {
               MessageUtils.showError(context, '查找房间失败: $e');
             }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('加入'),
-        ),
+        }, text: '加入'),
       ],
     );
   }
@@ -285,7 +266,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
     ChatUtils.showStyledDialog(
       context: context,
       title: '修改密码',
-      icon: const Icon(Icons.password, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.password, color: Theme.of(context).primaryColor),
       content: SizedBox(
         width: 300,
         child: TextField(
@@ -301,12 +282,9 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () async {
             if (passwordController.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入新密码');
               return;
@@ -318,13 +296,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
             } catch (e) {
               MessageUtils.showError(context, '修改失败: $e');
             }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('确定'),
-        ),
+        }, text: '确定'),
       ],
     );
   }
@@ -333,7 +305,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
     ChatUtils.showStyledDialog(
       context: context,
       title: '管理员设置',
-      icon: const Icon(Icons.admin_panel_settings, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.admin_panel_settings, color: Theme.of(context).primaryColor),
       content: const SizedBox(
         width: 600,
         height: 500,
@@ -353,7 +325,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
     ChatUtils.showStyledDialog(
       context: context,
       title: '服务器设置',
-      icon: const Icon(Icons.dns_rounded, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.dns_rounded, color: Theme.of(context).primaryColor),
       content: SizedBox(
         width: 400,
         child: Column(
@@ -380,12 +352,9 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () async {
             if (controller.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入服务器地址');
               return;
@@ -396,50 +365,35 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
               MessageUtils.showSuccess(context, '服务器地址已更新');
               _loadRooms(silent: false);
             }
-          },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('保存'),
-        ),
+        }, text: '保存'),
       ],
     );
   }
 
-  void _handleLogout() {
-    ChatUtils.showStyledDialog<bool>(
+  Future<void> _handleLogout() async {
+    final confirm = await ChatUtils.showStyledDialog<bool>(
       context: context,
       title: '退出登录',
       icon: const Icon(Icons.logout, color: Colors.red),
       content: const Text('确定要退出当前账号吗？'),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('退出'),
-        ),
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () => Navigator.pop(context, true), text: '退出'),
       ],
-    ).then((confirm) async {
-      if (confirm == true) {
-        await WatchTogetherService.logout();
-        if (mounted) {
-          setState(() {
-            _isLoggedIn = false;
-            _currentUser = null;
-            _rooms = [];
-          });
-          MessageUtils.showSuccess(context, '已退出登录');
-        }
+    );
+
+    if (confirm == true) {
+      await WatchTogetherService.logout();
+      if (mounted) {
+        setState(() {
+          _isLoggedIn = false;
+          _currentUser = null;
+          _rooms = [];
+        });
+        MessageUtils.showSuccess(context, '已退出登录');
       }
-    });
+    }
   }
 
   Future<void> _handleJoinRoom(WRoom room) async {
@@ -467,19 +421,14 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, passwordController.text),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF5D5FEF),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('确定'),
-          ),
-        ],
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () => Navigator.pop(context, passwordController.text),
+          text: '确定',
+        ),
+      ],
       );
 
       if (password == null) return;
@@ -524,18 +473,9 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
       icon: const Icon(Icons.delete_outline, color: Colors.red),
       content: Text('确定要删除房间 "${room.roomName}" 吗？此操作不可撤销。'),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('删除'),
-        ),
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () => Navigator.pop(context, true), text: '删除'),
       ],
     );
 
@@ -559,7 +499,7 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
     final isAdmin = _currentUser != null && _currentUser!.role >= 4;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1E1E1E) : const Color(0xFFF7F7FC),
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
         child: Container(
@@ -785,12 +725,13 @@ class _DesktopHomeScreenState extends State<DesktopHomeScreen> {
 
   Widget _buildRoomCard(WRoom room, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF2C2C2C) : _cardColors[index % _cardColors.length];
+    final cardColor = isDark ? Colors.black : _cardColors[index % _cardColors.length];
     
     return Container(
       decoration: BoxDecoration(
         color: cardColor,
         borderRadius: BorderRadius.circular(24),
+        border: isDark ? Border.all(color: Colors.white24, width: 1) : null,
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -988,16 +929,13 @@ class _LoginDialogState extends State<_LoginDialog> {
           SizedBox(
             width: double.infinity,
             height: 48,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5D5FEF),
-                foregroundColor: Colors.white,
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(_isRegistering ? '注册' : '登录'),
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ChatUtils.createConfirmButton(
+                    context,
+                    _handleSubmit,
+                    text: _isRegistering ? '注册' : '登录',
+                  ),
           ),
           const SizedBox(height: 12),
           TextButton(

@@ -149,7 +149,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
     ChatUtils.showStyledDialog<bool>(
       context: context,
       title: '登录/注册',
-      icon: const Icon(Icons.login, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.login, color: Theme.of(context).primaryColor),
       content: const _LoginDialog(),
       actions: [],
     ).then((result) {
@@ -178,7 +178,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
     ChatUtils.showStyledDialog(
       context: context,
       title: '创建房间',
-      icon: const Icon(Icons.add_box_outlined, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.add_box_outlined, color: Theme.of(context).primaryColor),
       content: SizedBox(
         width: 400,
         child: Column(
@@ -211,12 +211,11 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () async {
             if (nameController.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入房间名称');
               return;
@@ -233,11 +232,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
               MessageUtils.showError(context, '创建失败: $e');
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('创建'),
+          text: '创建',
         ),
       ],
     );
@@ -251,7 +246,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
     ChatUtils.showStyledDialog(
       context: context,
       title: '服务器设置',
-      icon: const Icon(Icons.dns_rounded, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.dns_rounded, color: Theme.of(context).primaryColor),
       content: SizedBox(
         width: 400,
         child: Column(
@@ -279,12 +274,11 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
         ),
       ),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () async {
             if (controller.text.isEmpty) {
               MessageUtils.showWarning(context, '请输入服务器地址');
               return;
@@ -296,11 +290,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
               _loadRooms(silent: false);
             }
           },
-          style: ElevatedButton.styleFrom(
-            backgroundColor: const Color(0xFF5D5FEF),
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('保存'),
+          text: '保存',
         ),
       ],
     );
@@ -313,17 +303,12 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
       icon: const Icon(Icons.logout, color: Colors.red),
       content: const Text('确定要退出当前账号吗？'),
       actions: [
-        TextButton(
-          onPressed: () => Navigator.pop(context, false),
-          child: const Text('取消'),
-        ),
-        ElevatedButton(
-          onPressed: () => Navigator.pop(context, true),
-          style: ElevatedButton.styleFrom(
-            backgroundColor: Colors.red,
-            foregroundColor: Colors.white,
-          ),
-          child: const Text('退出'),
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(
+          context,
+          () => Navigator.pop(context, true),
+          text: '退出',
         ),
       ],
     ).then((confirm) async {
@@ -350,7 +335,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
       final password = await ChatUtils.showStyledDialog<String>(
         context: context,
         title: '输入房间密码',
-        icon: const Icon(Icons.lock),
+        icon: Icon(Icons.lock, color: Theme.of(context).primaryColor),
         content: SizedBox(
           width: 300,
           child: TextField(
@@ -366,17 +351,12 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
           ),
         ),
         actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('取消'),
-          ),
-          ElevatedButton(
-            onPressed: () => Navigator.pop(context, passwordController.text),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF5D5FEF),
-              foregroundColor: Colors.white,
-            ),
-            child: const Text('确定'),
+          ChatUtils.createCancelButton(context),
+          const SizedBox(width: 8),
+          ChatUtils.createConfirmButton(
+            context,
+            () => Navigator.pop(context, passwordController.text),
+            text: '确定',
           ),
         ],
       );
@@ -422,7 +402,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF141414) : const Color(0xFFF0F0F0),
+      backgroundColor: theme.scaffoldBackgroundColor,
       body: Column(
         children: [
           // Top Header
@@ -430,7 +410,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
             height: 80,
             padding: const EdgeInsets.symmetric(horizontal: 32),
             decoration: BoxDecoration(
-              color: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+              color: theme.appBarTheme.backgroundColor,
               boxShadow: [
                 BoxShadow(
                   color: Colors.black.withOpacity(0.05),
@@ -601,7 +581,7 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
 
   Widget _buildRoomCard(WRoom room, int index) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final cardColor = isDark ? const Color(0xFF252525) : _cardColors[index % _cardColors.length];
+    final cardColor = isDark ? Colors.black : _cardColors[index % _cardColors.length];
     
     return Focus(
       child: Builder(
@@ -613,7 +593,9 @@ class _LargeScreenHomeState extends State<LargeScreenHome> {
               decoration: BoxDecoration(
                 color: cardColor,
                 borderRadius: BorderRadius.circular(24),
-                border: hasFocus ? Border.all(color: const Color(0xFF5D5FEF), width: 4) : null,
+                border: hasFocus 
+                    ? Border.all(color: const Color(0xFF5D5FEF), width: 4) 
+                    : (isDark ? Border.all(color: Colors.white24, width: 1) : null),
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(hasFocus ? 0.2 : 0.05),
@@ -797,17 +779,13 @@ class _LoginDialogState extends State<_LoginDialog> {
           SizedBox(
             width: double.infinity,
             height: 56,
-            child: ElevatedButton(
-              onPressed: _isLoading ? null : _handleSubmit,
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF5D5FEF),
-                foregroundColor: Colors.white,
-                textStyle: const TextStyle(fontSize: 18),
-              ),
-              child: _isLoading
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text(_isRegistering ? '注册' : '登录'),
-            ),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : ChatUtils.createConfirmButton(
+                    context,
+                    _handleSubmit,
+                    text: _isRegistering ? '注册' : '登录',
+                  ),
           ),
           const SizedBox(height: 16),
           TextButton(

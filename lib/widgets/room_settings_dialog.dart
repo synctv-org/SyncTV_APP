@@ -264,7 +264,10 @@ class _RoomSettingsDialogState extends State<RoomSettingsDialog> {
                         onChanged: (v) => setState(() => _updatePassword = v ?? false),
                         activeColor: theme.primaryColor,
                       ),
-                      Text('修改密码', style: TextStyle(color: textColor, fontWeight: FontWeight.w500)),
+                      Text('修改密码', style: TextStyle(
+                        color: isDark ? Colors.white : textColor, 
+                        fontWeight: FontWeight.w500
+                      )),
                     ],
                   ),
                   if (_updatePassword)
@@ -352,7 +355,9 @@ class _RoomSettingsDialogState extends State<RoomSettingsDialog> {
           Text(
             title,
             style: TextStyle(
-              color: Theme.of(context).primaryColor,
+              color: Theme.of(context).brightness == Brightness.dark 
+                  ? Colors.white 
+                  : Theme.of(context).primaryColor,
               fontWeight: FontWeight.bold,
               fontSize: 15,
             ),

@@ -669,7 +669,7 @@ class _DesktopRoomScreenState extends State<DesktopRoomScreen> with SingleTicker
     final isDark = theme.brightness == Brightness.dark;
 
     return Scaffold(
-      backgroundColor: isDark ? const Color(0xFF1E1E1E) : Colors.white,
+      backgroundColor: theme.scaffoldBackgroundColor,
       appBar: AppBar(
         title: Text(widget.room.roomName),
         backgroundColor: theme.appBarTheme.backgroundColor,
@@ -893,37 +893,74 @@ class _DesktopRoomScreenState extends State<DesktopRoomScreen> with SingleTicker
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-      color: theme.hoverColor,
+      decoration: BoxDecoration(
+        color: theme.cardColor,
+        border: Border(bottom: BorderSide(color: theme.dividerColor.withOpacity(0.1))),
+      ),
       child: Row(
         children: [
           Icon(
-            _webrtcManager!.isConnected ? Icons.mic : Icons.mic_off,
-            size: 16,
-            color: _webrtcManager!.isConnected ? Colors.green : Colors.grey,
+            _webrtcManager!.isConnected ? Icons.mic_rounded : Icons.mic_off_rounded,
+            color: _webrtcManager!.isConnected 
+              ? (_webrtcManager!.isMuted ? Colors.red : Colors.green)
+              : theme.disabledColor,
+            size: 20,
           ),
           const SizedBox(width: 8),
           Text(
             _webrtcManager!.isConnected 
-              ? '语音已连接 (${_webrtcManager!.participantCount}人)'
+              ? (_webrtcManager!.hasPeersConnected 
+                  ? (_webrtcManager!.isMuted ? '语音已连接 (${_webrtcManager!.participantCount}人) (静音)' : '语音已连接 (${_webrtcManager!.participantCount}人)')
+                  : (_webrtcManager!.isMuted ? '等待加入... (1人) (静音)' : '等待加入... (1人)'))
               : '语音聊天',
-            style: const TextStyle(fontSize: 12),
+            style: TextStyle(
+              color: theme.textTheme.bodyMedium?.color,
+              fontWeight: FontWeight.bold,
+              fontSize: 13,
+            ),
           ),
           const Spacer(),
           if (_webrtcManager!.isConnected) ...[
             IconButton(
-              icon: Icon(_webrtcManager!.isMuted ? Icons.mic_off : Icons.mic, size: 16),
+              icon: Icon(
+                _webrtcManager!.isMuted ? Icons.mic_off_rounded : Icons.mic_rounded,
+                color: _webrtcManager!.isMuted ? Colors.red : theme.primaryColor,
+              ),
               onPressed: () => _webrtcManager!.toggleMute(),
+              tooltip: _webrtcManager!.isMuted ? '取消静音' : '静音',
               constraints: const BoxConstraints(),
+              padding: const EdgeInsets.all(8),
             ),
             IconButton(
-              icon: const Icon(Icons.call_end, size: 16, color: Colors.red),
+              icon: const Icon(Icons.call_end_rounded, color: Colors.red),
               onPressed: () => _webrtcManager!.leave(),
+              tooltip: '退出语音',
               constraints: const BoxConstraints(),
+              padding: const EdgeInsets.all(8),
             ),
           ] else
-            TextButton(
-              onPressed: () => _webrtcManager!.join(),
-              child: const Text('加入'),
+            SizedBox(
+              height: 32,
+              child: ElevatedButton.icon(
+                 onPressed: () {
+                   _webrtcManager!.join().catchError((e) {
+                     MessageUtils.showError(context, '加入语音失败: $e');
+                   });
+                 },
+                 icon: const Icon(Icons.call_rounded, size: 14),
+                label: const Text('加入'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: theme.cardColor,
+                  foregroundColor: theme.textTheme.bodyMedium?.color,
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  textStyle: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(16),
+                    side: BorderSide(color: theme.dividerColor.withOpacity(0.1)),
+                  ),
+                  elevation: 0,
+                ),
+              ),
             ),
         ],
       ),
@@ -1043,61 +1080,191 @@ class _DesktopRoomScreenState extends State<DesktopRoomScreen> with SingleTicker
   }
 
   Widget _buildMembersTab() {
+    final theme = Theme.of(context);
+    final primaryColor = Theme.of(context).primaryColor;
+
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Text('在线成员 (${_members.length})', style: const TextStyle(fontWeight: FontWeight.bold)),
+          padding: const EdgeInsets.all(16.0),
+          child: Row(
+            children: [
+              Text('在线成员 (${_members.length})', style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+              const Spacer(),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                decoration: BoxDecoration(
+                  color: Colors.green.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: const Row(
+                  children: [
+                    Icon(Icons.circle, size: 8, color: Colors.green),
+                    SizedBox(width: 6),
+                    Text('Live', style: TextStyle(color: Colors.green, fontWeight: FontWeight.bold, fontSize: 12)),
+                  ],
+                ),
+              ),
+            ],
+          ),
         ),
         Expanded(
-          child: ListView.builder(
-            itemCount: _members.length,
-            itemBuilder: (context, index) {
-              final member = _members[index];
-              final isMe = _currentUser?.id == member.id;
+          child: RefreshIndicator(
+            onRefresh: _fetchMembers,
+            child: ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              itemCount: _members.length,
+              itemBuilder: (context, index) {
+                final member = _members[index];
+                
+                WUser? myMemberInfo;
+                try {
+                  myMemberInfo = _members.firstWhere((m) => m.id == _currentUser?.id);
+                } catch (_) {}
+                
+                final viewerIsCreator = _currentUser?.username == widget.room.creator;
+                final viewerIsRoomAdmin = myMemberInfo?.role == 2;
+                final viewerIsSysAdmin = (_currentUser?.role ?? 0) >= 4;
+                final viewerCanManage = viewerIsCreator || viewerIsRoomAdmin || viewerIsSysAdmin;
+                
+                int viewerLevel = 1;
+                if (viewerIsCreator) viewerLevel = 3;
+                else if (viewerIsRoomAdmin) viewerLevel = 2;
+                if (viewerIsSysAdmin) viewerLevel = 4;
+
+                final isTargetCreator = member.role == 3 || member.username == widget.room.creator;
+                final isTargetAdmin = member.role == 2;
+                final isMe = _currentUser?.id == member.id;
+                final isPending = member.status == 2;
+                
+                final canKick = viewerLevel > member.role;
               
-              // Simplified permission check logic for UI
-              return ListTile(
-                leading: CircleAvatar(
-                  child: Text(member.username[0].toUpperCase()),
-                ),
-                title: Text(member.username),
-                subtitle: Text(member.role == 3 ? '房主' : (member.role == 2 ? '管理员' : '成员')),
-                trailing: isMe ? const Chip(label: Text('我'), labelPadding: EdgeInsets.zero) : null,
-                onTap: () {
-                  // Show management dialog if have permission (simplified)
-                  if (_currentUser != null && _currentUser!.role > member.role) {
-                    _showMemberActionDialog(member);
-                  }
-                },
-              );
-            },
+                return Container(
+                  margin: const EdgeInsets.only(bottom: 8),
+                  decoration: BoxDecoration(
+                    color: theme.cardColor,
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: theme.dividerColor.withOpacity(0.1)),
+                  ),
+                  child: ListTile(
+                    contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+                    leading: Stack(
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(2),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            border: Border.all(color: isTargetCreator ? primaryColor : Colors.transparent, width: 2),
+                          ),
+                          child: CircleAvatar(
+                            backgroundColor: primaryColor.withOpacity(0.1),
+                            child: Text(member.username.isNotEmpty ? member.username[0].toUpperCase() : '?', 
+                              style: TextStyle(color: primaryColor, fontWeight: FontWeight.bold)),
+                          ),
+                        ),
+                        if (isTargetCreator)
+                          const Positioned(
+                            right: 0,
+                            bottom: 0,
+                            child: Icon(Icons.star, size: 14, color: Colors.amber),
+                          ),
+                      ],
+                    ),
+                    title: Row(
+                      children: [
+                        Text(member.username, style: const TextStyle(fontWeight: FontWeight.bold)),
+                        const SizedBox(width: 8),
+                        if (isMe)
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: theme.primaryColor.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                            ),
+                            child: Text('我', style: TextStyle(fontSize: 10, color: theme.primaryColor)),
+                          ),
+                        if (isTargetAdmin) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.blue.withOpacity(0.5)),
+                            ),
+                            child: const Text('管理员', style: TextStyle(fontSize: 10, color: Colors.blue)),
+                          ),
+                        ],
+                        if (isPending) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                            decoration: BoxDecoration(
+                              color: Colors.orange.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(4),
+                              border: Border.all(color: Colors.orange.withOpacity(0.5)),
+                            ),
+                            child: const Text('审核中', style: TextStyle(fontSize: 10, color: Colors.orange)),
+                          ),
+                        ],
+                      ],
+                    ),
+                    subtitle: member.onlineCount > 0 
+                      ? Text('在线 (${member.onlineCount})', style: const TextStyle(color: Colors.green, fontSize: 12))
+                      : Text('离线 · 加入于 ${DateTime.fromMillisecondsSinceEpoch(member.createdAt * 1000).toString().substring(0, 10)}', 
+                          style: TextStyle(color: theme.disabledColor, fontSize: 12)),
+                    trailing: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (isPending && viewerCanManage) ...[
+                          IconButton(
+                            onPressed: () => _approveMember(member),
+                            icon: const Icon(Icons.check_circle_outline, color: Colors.green),
+                            tooltip: '同意',
+                          ),
+                          IconButton(
+                            onPressed: () => _deleteMember(member),
+                            icon: const Icon(Icons.highlight_off, color: Colors.red),
+                            tooltip: '拒绝',
+                          ),
+                        ],
+                        if (!isMe && !isPending && !isTargetCreator) ...[
+                          if ((viewerIsCreator || viewerIsRoomAdmin) && member.role == 1)
+                            IconButton(
+                              icon: const Icon(Icons.admin_panel_settings_outlined, color: Colors.blue),
+                              tooltip: '设为管理',
+                              onPressed: () => _setRoomAdmin(member),
+                            ),
+                          
+                          if (viewerIsCreator && member.role == 2)
+                            IconButton(
+                              icon: const Icon(Icons.remove_moderator_outlined, color: Colors.orange),
+                              tooltip: '取消管理',
+                              onPressed: () => _removeRoomAdmin(member),
+                            ),
+
+                          if (canKick) 
+                            IconButton(
+                              icon: const Icon(Icons.remove_circle_outline, color: Colors.redAccent),
+                              tooltip: '移除成员',
+                              onPressed: () => _kickMember(member),
+                            ),
+                        ],
+                      ],
+                    ),
+                  ),
+                );
+              },
+            ),
           ),
         ),
       ],
     );
   }
 
-  void _showMemberActionDialog(WUser member) {
-    showDialog(
-      context: context,
-      builder: (context) => SimpleDialog(
-        title: Text('管理: ${member.username}'),
-        children: [
-          SimpleDialogOption(
-            onPressed: () {
-              Navigator.pop(context);
-              _kickMember(member);
-            },
-            child: const Text('踢出成员', style: TextStyle(color: Colors.red)),
-          ),
-        ],
-      ),
-    );
-  }
 
-  // ... (Missing methods: _enterFolder, _exitFolder, _switchMovie, _enterSelectionMode, etc. - implementation same as mobile)
-  
+
+ 
   void _enterFolder(WMovie folder) {
     setState(() {
       _folderStack.add(folder);
@@ -1266,13 +1433,95 @@ class _DesktopRoomScreenState extends State<DesktopRoomScreen> with SingleTicker
     AddMovieDialog.show(context, widget.room.roomId);
   }
   
-  Future<void> _kickMember(WUser member) async {
+  Future<void> _approveMember(WUser member) async {
     try {
-      await WatchTogetherService.kickMember(widget.room.roomId, member.id);
-      _fetchMembers(); 
-      if (mounted) MessageUtils.showSuccess(context, '已踢出成员');
+      await WatchTogetherService.approveMember(widget.room.roomId, member.id);
+      _fetchMembers();
+      if (mounted) MessageUtils.showSuccess(context, '已允许 ${member.username} 加入');
     } catch (e) {
-      if (mounted) MessageUtils.showError(context, '踢出失败: $e');
+      if (mounted) MessageUtils.showError(context, '操作失败: $e');
+    }
+  }
+
+  Future<void> _deleteMember(WUser member) async {
+    try {
+      await WatchTogetherService.deleteRoomMember(widget.room.roomId, member.id);
+      _fetchMembers();
+      if (mounted) MessageUtils.showSuccess(context, '已拒绝 ${member.username} 加入');
+    } catch (e) {
+      if (mounted) MessageUtils.showError(context, '操作失败: $e');
+    }
+  }
+
+  Future<void> _setRoomAdmin(WUser member) async {
+    final confirmed = await ChatUtils.showStyledDialog<bool>(
+      context: context,
+      title: '设为管理员',
+      icon: const Icon(Icons.admin_panel_settings_rounded, color: Colors.blue),
+      content: Text('确定要将 ${member.username} 设为管理员吗？\n管理员拥有踢人、管理成员等权限。'),
+      actions: [
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () => Navigator.pop(context, true), text: '确定'),
+      ],
+    );
+
+    if (confirmed == true) {
+      try {
+        await WatchTogetherService.setRoomAdmin(widget.room.roomId, member.id);
+        _fetchMembers();
+        if (mounted) MessageUtils.showSuccess(context, '已将 ${member.username} 设为管理员');
+      } catch (e) {
+        if (mounted) MessageUtils.showError(context, '设置失败: $e');
+      }
+    }
+  }
+
+  Future<void> _removeRoomAdmin(WUser member) async {
+    final confirmed = await ChatUtils.showStyledDialog<bool>(
+      context: context,
+      title: '取消管理员',
+      icon: const Icon(Icons.remove_moderator_rounded, color: Colors.orange),
+      content: Text('确定要取消 ${member.username} 的管理员权限吗？'),
+      actions: [
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () => Navigator.pop(context, true), text: '确定'),
+      ],
+    );
+
+    if (confirmed == true) {
+      try {
+        await WatchTogetherService.removeRoomAdmin(widget.room.roomId, member.id);
+        _fetchMembers();
+        if (mounted) MessageUtils.showSuccess(context, '已取消 ${member.username} 的管理员权限');
+      } catch (e) {
+        if (mounted) MessageUtils.showError(context, '取消失败: $e');
+      }
+    }
+  }
+
+  Future<void> _kickMember(WUser member) async {
+    final confirmed = await ChatUtils.showStyledDialog<bool>(
+      context: context,
+      title: '踢出成员',
+      icon: const Icon(Icons.remove_circle_outline, color: Colors.red),
+      content: Text('确定要踢出 ${member.username} 吗？'),
+      actions: [
+        ChatUtils.createCancelButton(context),
+        const SizedBox(width: 8),
+        ChatUtils.createConfirmButton(context, () => Navigator.pop(context, true), text: '确定'),
+      ],
+    );
+
+    if (confirmed == true) {
+      try {
+        await WatchTogetherService.kickMember(widget.room.roomId, member.id);
+        _fetchMembers(); 
+        if (mounted) MessageUtils.showSuccess(context, '已踢出成员');
+      } catch (e) {
+        if (mounted) MessageUtils.showError(context, '踢出失败: $e');
+      }
     }
   }
   

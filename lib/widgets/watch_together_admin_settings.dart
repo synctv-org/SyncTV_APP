@@ -439,8 +439,7 @@ class _UserManagementTabState extends State<UserManagementTab> {
       actions: [
         ChatUtils.createCancelButton(context),
         const SizedBox(width: 8),
-        ElevatedButton(
-          onPressed: () async {
+        ChatUtils.createConfirmButton(context, () async {
             if (usernameController.text.isEmpty || passwordController.text.isEmpty) {
               MessageUtils.showWarning(context, '请填写完整信息');
               return;
@@ -457,9 +456,7 @@ class _UserManagementTabState extends State<UserManagementTab> {
             } catch (e) {
               MessageUtils.showError(context, '创建失败: $e');
             }
-          },
-          child: const Text('创建'),
-        ),
+        }, text: '创建'),
       ],
     );
   }
@@ -575,20 +572,28 @@ class _UserManagementTabState extends State<UserManagementTab> {
                 ),
               ),
               const SizedBox(width: 8),
-              Material(
-                color: theme.primaryColor.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                child: InkWell(
-                  onTap: _addUser,
+              Container(
+                decoration: BoxDecoration(
+                  color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100,
                   borderRadius: BorderRadius.circular(12),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                    child: Row(
-                      children: [
-                        Icon(Icons.add_circle_rounded, color: theme.primaryColor, size: 20),
-                        const SizedBox(width: 4),
-                        Text('新增', style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold)),
-                      ],
+                ),
+                child: Material(
+                  color: Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                  child: InkWell(
+                    onTap: _addUser,
+                    borderRadius: BorderRadius.circular(12),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+                      alignment: Alignment.center,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(Icons.add_circle_rounded, color: theme.primaryColor, size: 20),
+                          const SizedBox(width: 8),
+                          Text('新增', style: TextStyle(color: theme.primaryColor, fontWeight: FontWeight.bold, fontSize: 14)),
+                        ],
+                      ),
                     ),
                   ),
                 ),

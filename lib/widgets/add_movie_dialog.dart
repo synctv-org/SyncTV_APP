@@ -15,7 +15,7 @@ class AddMovieDialog extends StatefulWidget {
     return ChatUtils.showStyledDialog(
       context: context,
       title: '添加影片',
-      icon: const Icon(Icons.add_to_queue, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.add_to_queue, color: Theme.of(context).primaryColor),
       content: AddMovieDialog(roomId: roomId, parentId: parentId),
       actions: [],
     );
@@ -107,7 +107,7 @@ class _AddMovieDialogState extends State<AddMovieDialog> {
                         color: theme.cardColor,
                         shape: BoxShape.circle,
                       ),
-                      child: Icon(Icons.arrow_back_rounded, size: 22, color: theme.primaryColor),
+                      child: Icon(Icons.arrow_back_rounded, size: 22, color: theme.brightness == Brightness.dark ? Colors.white : theme.primaryColor),
                     ),
                   ),
                   const SizedBox(width: 16),
@@ -765,7 +765,7 @@ class _AddMovieDialogState extends State<AddMovieDialog> {
           Text('请先绑定账号以访问资源', style: TextStyle(color: theme.hintColor)),
           const SizedBox(height: 24),
           Material(
-            color: theme.primaryColor.withOpacity(0.08),
+            color: theme.primaryColor,
             borderRadius: BorderRadius.circular(12),
             child: InkWell(
               onTap: () async {
@@ -781,12 +781,12 @@ class _AddMovieDialogState extends State<AddMovieDialog> {
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    Icon(Icons.link, color: theme.primaryColor, size: 20),
+                    Icon(Icons.link, color: Colors.white, size: 20),
                     const SizedBox(width: 8),
                     Text(
                       '立即绑定 $name',
                       style: TextStyle(
-                        color: theme.primaryColor,
+                        color: Colors.white,
                         fontWeight: FontWeight.w600,
                         fontSize: 15,
                       ),

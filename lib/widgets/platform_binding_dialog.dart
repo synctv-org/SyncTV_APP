@@ -12,7 +12,7 @@ class PlatformBindingDialog extends StatefulWidget {
     return ChatUtils.showStyledDialog(
       context: context,
       title: '账号绑定',
-      icon: const Icon(Icons.link_rounded, color: Color(0xFF5D5FEF)),
+      icon: Icon(Icons.link_rounded, color: Theme.of(context).primaryColor),
       content: PlatformBindingDialog(initialIndex: initialIndex),
       actions: [],
     );
@@ -244,7 +244,7 @@ class _PlatformBindingDialogState extends State<PlatformBindingDialog> with Sing
         children: [
           Container(
             decoration: BoxDecoration(
-              color: isDark ? Colors.black26 : Colors.grey.shade100,
+              color: isDark ? Colors.white.withOpacity(0.1) : Colors.black.withOpacity(0.05),
               borderRadius: BorderRadius.circular(12),
             ),
             padding: const EdgeInsets.all(4),
@@ -254,7 +254,7 @@ class _PlatformBindingDialogState extends State<PlatformBindingDialog> with Sing
               unselectedLabelColor: theme.hintColor,
               indicator: BoxDecoration(
                 borderRadius: BorderRadius.circular(10),
-                color: isDark ? theme.cardColor : Colors.white,
+                color: theme.scaffoldBackgroundColor,
                 boxShadow: [
                   BoxShadow(
                     color: Colors.black.withOpacity(0.05),
@@ -376,12 +376,12 @@ class _PlatformBindingDialogState extends State<PlatformBindingDialog> with Sing
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.add_circle_rounded, color: theme.primaryColor, size: 20),
+                      Icon(Icons.add_circle_rounded, color: isDark ? Colors.white : theme.primaryColor, size: 20),
                       const SizedBox(width: 8),
                       Text(
                         '添加 $type 账号',
                         style: TextStyle(
-                          color: theme.primaryColor,
+                          color: isDark ? Colors.white : theme.primaryColor,
                           fontWeight: FontWeight.w600,
                           fontSize: 15,
                         ),
@@ -463,7 +463,7 @@ class _AddAccountDialogState extends State<_AddAccountDialog> {
     
     return Container(
       decoration: BoxDecoration(
-        color: isDark ? Colors.white.withOpacity(0.05) : Colors.grey.shade100,
+        color: isDark ? Colors.white.withOpacity(0.05) : Colors.black.withOpacity(0.05),
         borderRadius: BorderRadius.circular(12),
       ),
       child: ClipRRect(

@@ -63,7 +63,9 @@ class WebRTCManager {
       
       _localStream = await navigator.mediaDevices.getUserMedia(mediaConstraints);
     
-    await Helper.setSpeakerphoneOn(true);
+      if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+        await Helper.setSpeakerphoneOn(true);
+      }
       
       onSignalingMessage('join', {});
       
@@ -203,7 +205,9 @@ class WebRTCManager {
   }
 
   Future<void> leave() async {
-    await Helper.setSpeakerphoneOn(false);
+    if (!kIsWeb && (Platform.isAndroid || Platform.isIOS)) {
+      await Helper.setSpeakerphoneOn(false);
+    }
     if (_isConnected) {
       onSignalingMessage('leave', {});
     }

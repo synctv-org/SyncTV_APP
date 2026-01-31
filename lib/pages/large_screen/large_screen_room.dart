@@ -503,7 +503,7 @@ class _LargeScreenRoomState extends State<LargeScreenRoom> {
                   width: MediaQuery.of(context).size.width * 0.35 < 300 ? 300 : (MediaQuery.of(context).size.width * 0.35 > 500 ? 500 : MediaQuery.of(context).size.width * 0.35),
                   child: Container(
                     decoration: BoxDecoration(
-                      color: const Color(0xFF1E1E1E).withOpacity(0.95),
+                      color: theme.scaffoldBackgroundColor.withOpacity(0.95),
                       boxShadow: [
                         BoxShadow(
                           color: Colors.black.withOpacity(0.5),
@@ -528,14 +528,14 @@ class _LargeScreenRoomState extends State<LargeScreenRoom> {
                                 width: 60,
                                 alignment: Alignment.center,
                                 child: IconButton(
-                                  icon: const Icon(Icons.close, color: Colors.white54),
+                                  icon: Icon(Icons.close, color: isDark ? Colors.white54 : Colors.black54),
                                   onPressed: () => setState(() => _showSidePanel = false),
                                 ),
                               ),
                             ],
                           ),
                         ),
-                        const Divider(height: 1, color: Colors.white10),
+                        Divider(height: 1, color: theme.dividerColor),
                         
                         // Tab Content
                         Expanded(
@@ -562,6 +562,9 @@ class _LargeScreenRoomState extends State<LargeScreenRoom> {
 
   Widget _buildTabItem(int index, IconData icon, String label) {
     final isSelected = _selectedTabIndex == index;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final unselectedColor = isDark ? Colors.white54 : Colors.black54;
+    
     return InkWell(
       onTap: () => setState(() => _selectedTabIndex = index),
       focusColor: const Color(0xFF5D5FEF).withOpacity(0.3),
@@ -573,9 +576,9 @@ class _LargeScreenRoomState extends State<LargeScreenRoom> {
         ),
         child: Column(
           children: [
-            Icon(icon, color: isSelected ? const Color(0xFF5D5FEF) : Colors.white54),
+            Icon(icon, color: isSelected ? const Color(0xFF5D5FEF) : unselectedColor),
             const SizedBox(height: 4),
-            Text(label, style: TextStyle(color: isSelected ? const Color(0xFF5D5FEF) : Colors.white54)),
+            Text(label, style: TextStyle(color: isSelected ? const Color(0xFF5D5FEF) : unselectedColor)),
           ],
         ),
       ),

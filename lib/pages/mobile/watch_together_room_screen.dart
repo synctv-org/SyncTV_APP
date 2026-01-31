@@ -672,18 +672,6 @@ class _WatchTogetherRoomScreenState extends State<WatchTogetherRoomScreen> with 
     return Scaffold(
       body: Stack(
         children: [
-          Container(
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                stops: const [0.0, 0.4, 1.0],
-                colors: isDark 
-                  ? [const Color(0xFF1E1E2C), const Color(0xFF2D2D44), const Color(0xFF1E1E2C)]
-                  : [const Color(0xFFE0EAFC), const Color(0xFFCFDEF3), const Color(0xFFF5F6FA)],
-              ),
-            ),
-          ),
           SafeArea(
             bottom: false,
             child: Column(
@@ -743,10 +731,12 @@ class _WatchTogetherRoomScreenState extends State<WatchTogetherRoomScreen> with 
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: Colors.white.withOpacity(0.2),
+                    color: theme.brightness == Brightness.dark 
+                        ? Colors.white.withOpacity(0.1) 
+                        : Colors.black.withOpacity(0.05),
                     shape: BoxShape.circle,
                   ),
-                  child: const Icon(Icons.movie_filter_rounded, color: Color(0xFF5D5FEF)),
+                  child: Icon(Icons.movie_filter_rounded, color: theme.primaryColor),
                 ),
                 const SizedBox(width: 12),
                 Expanded(
@@ -1185,7 +1175,7 @@ class _WatchTogetherRoomScreenState extends State<WatchTogetherRoomScreen> with 
                       onPressed: _showAddMovieDialog,
                       icon: const Icon(Icons.add_circle_outline_rounded),
                       tooltip: '添加影片',
-                      color: theme.primaryColor,
+                      color: isDark ? Colors.white : theme.primaryColor,
                     ),
                   ],
                 ),
@@ -1207,11 +1197,11 @@ class _WatchTogetherRoomScreenState extends State<WatchTogetherRoomScreen> with 
                 ),
                 child: Row(
                   children: [
-                    Icon(Icons.arrow_back_rounded, size: 18, color: theme.primaryColor),
+                    Icon(Icons.arrow_back_rounded, size: 18, color: isDark ? Colors.white : theme.primaryColor),
                     const SizedBox(width: 8),
                     Text(
                       '返回上一级 | ${_folderNameStack.last}',
-                      style: TextStyle(fontWeight: FontWeight.bold, color: theme.primaryColor),
+                      style: TextStyle(fontWeight: FontWeight.bold, color: isDark ? Colors.white : theme.primaryColor),
                     ),
                   ],
                 ),
