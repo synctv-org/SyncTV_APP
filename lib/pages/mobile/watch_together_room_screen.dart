@@ -737,60 +737,71 @@ class _WatchTogetherRoomScreenState extends State<WatchTogetherRoomScreen> with 
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.2),
-                  shape: BoxShape.circle,
-                ),
-                child: const Icon(Icons.movie_filter_rounded, color: Color(0xFF5D5FEF)),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    widget.room.roomName,
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: theme.textTheme.titleLarge?.color,
-                    ),
+          Expanded(
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withOpacity(0.2),
+                    shape: BoxShape.circle,
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      Clipboard.setData(ClipboardData(text: widget.room.roomId));
-                      MessageUtils.showInfo(context, '房间ID已复制');
-                    },
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Text(
-                          'ID: ${widget.room.roomId}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: theme.hintColor,
-                          ),
+                  child: const Icon(Icons.movie_filter_rounded, color: Color(0xFF5D5FEF)),
+                ),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        widget.room.roomName,
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: theme.textTheme.titleLarge?.color,
                         ),
-                        const SizedBox(width: 4),
-                        Icon(Icons.copy_rounded, size: 14, color: theme.hintColor),
-                      ],
-                    ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      GestureDetector(
+                        onTap: () {
+                          Clipboard.setData(ClipboardData(text: widget.room.roomId));
+                          MessageUtils.showInfo(context, '房间ID已复制');
+                        },
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Flexible(
+                              child: Text(
+                                'ID: ${widget.room.roomId}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: theme.hintColor,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            const SizedBox(width: 4),
+                            Icon(Icons.copy_rounded, size: 14, color: theme.hintColor),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              const SizedBox(width: 8),
-              if (_currentStatus?.movie != null)
-                IconButton(
-                  onPressed: _stopPlayback,
-                  icon: const Icon(Icons.stop_circle_outlined, color: Colors.red),
-                  tooltip: '停止播放',
-                  iconSize: 24,
                 ),
-            ],
+                const SizedBox(width: 8),
+                if (_currentStatus?.movie != null)
+                  IconButton(
+                    onPressed: _stopPlayback,
+                    icon: const Icon(Icons.stop_circle_outlined, color: Colors.red),
+                    tooltip: '停止播放',
+                    iconSize: 24,
+                  ),
+              ],
+            ),
           ),
+          const SizedBox(width: 8),
           Row(
             children: [
               if ((_currentUser?.username == widget.room.creator) || 

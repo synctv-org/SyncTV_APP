@@ -64,11 +64,45 @@ class MyApp extends StatelessWidget {
       ),
       builder: (context, child) {
         final mediaQueryData = MediaQuery.of(context);
+        var newMediaQueryData = mediaQueryData;
+        Widget newChild = child!;
+        if (mediaQueryData.size.width < 600 && mediaQueryData.size.width > 0) {
+          const double targetWidth = 414.0;          
+          if (mediaQueryData.size.width < targetWidth) {
+            final double scale = mediaQueryData.size.width / targetWidth;
+            newMediaQueryData = mediaQueryData.copyWith(
+              size: Size(targetWidth, mediaQueryData.size.height / scale),
+              devicePixelRatio: mediaQueryData.devicePixelRatio * scale,
+              padding: mediaQueryData.padding / scale,
+              viewPadding: mediaQueryData.viewPadding / scale,
+              viewInsets: mediaQueryData.viewInsets / scale,
+              systemGestureInsets: mediaQueryData.systemGestureInsets / scale,
+              textScaler: mediaQueryData.textScaler.clamp(minScaleFactor: 0.8, maxScaleFactor: 1.0),
+            );
+
+            newChild = FittedBox(
+              fit: BoxFit.contain,
+              alignment: Alignment.center,
+              child: SizedBox(
+                width: targetWidth,
+                height: mediaQueryData.size.height / scale,
+                child: newChild,
+              ),
+            );
+          } else {
+             newMediaQueryData = mediaQueryData.copyWith(
+               textScaler: mediaQueryData.textScaler.clamp(minScaleFactor: 0.8, maxScaleFactor: 1.0),
+             );
+          }
+        } else {
+           newMediaQueryData = mediaQueryData.copyWith(
+             textScaler: mediaQueryData.textScaler.clamp(minScaleFactor: 0.8, maxScaleFactor: 1.0),
+           );
+        }
+
         return MediaQuery(
-          data: mediaQueryData.copyWith(
-            textScaler: mediaQueryData.textScaler.clamp(minScaleFactor: 0.8, maxScaleFactor: 1.0),
-          ),
-          child: child!,
+          data: newMediaQueryData,
+          child: newChild,
         );
       },
       // home: const LargeScreenHome(),
@@ -230,7 +264,7 @@ class _WatchTogetherHomeScreenState extends State<WatchTogetherHomeScreen> {
           _isLoggedIn = true;
         });
         _loadRooms(silent: false);
-        _fetchUserInfo(); // Fetch user info after login
+        _fetchUserInfo();
       } else {
         if (mounted) {
           setState(() {
